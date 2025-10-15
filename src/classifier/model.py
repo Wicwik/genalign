@@ -20,7 +20,7 @@ class RoBERTaClassifier:
         num_labels: int = 2,
         cache_dir: str = "./cache",
         device: str = "auto",
-        torch_dtype: torch.dtype = torch.float32
+        dtype: torch.dtype = torch.float32
     ):
         """
         Initialize the RoBERTa classifier.
@@ -30,13 +30,13 @@ class RoBERTaClassifier:
             num_labels: Number of classification labels
             cache_dir: Directory to cache the model
             device: Device to use ("auto", "cuda", "cpu")
-            torch_dtype: Torch data type
+            dtype: Torch data type
         """
         self.model_name = model_name
         self.num_labels = num_labels
         self.cache_dir = cache_dir
         self.device = self._get_device(device)
-        self.torch_dtype = torch_dtype
+        self.dtype = dtype
         
         # Initialize components
         self.tokenizer = None
@@ -71,7 +71,7 @@ class RoBERTaClassifier:
             self.model_name,
             num_labels=self.num_labels,
             cache_dir=self.cache_dir,
-            torch_dtype=self.torch_dtype
+            dtype=self.dtype
         )
         
         # Move to device
@@ -259,7 +259,7 @@ class RoBERTaClassifier:
         self.tokenizer = AutoTokenizer.from_pretrained(load_path)
         self.model = AutoModelForSequenceClassification.from_pretrained(
             load_path,
-            torch_dtype=self.torch_dtype
+            dtype=self.dtype
         )
         self.model = self.model.to(self.device)
         
@@ -281,7 +281,7 @@ class RoBERTaClassifier:
             "model_name": self.model_name,
             "num_labels": self.num_labels,
             "device": str(self.device),
-            "dtype": str(self.torch_dtype),
+            "dtype": str(self.dtype),
             "label_to_id": self.label_to_id,
             "id_to_label": self.id_to_label
         }
