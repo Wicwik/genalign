@@ -155,8 +155,8 @@ class ClassificationPromptTemplate(PromptTemplate):
             task_description: Description of the classification task
             label_descriptions: Dictionary mapping labels to descriptions
         """
-        super().__init__(task_description)
         self.label_descriptions = label_descriptions or {}
+        super().__init__(task_description)
     
     def _create_system_prompt(self) -> str:
         """Create the system prompt for classification tasks."""
