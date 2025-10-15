@@ -13,7 +13,7 @@ class ICLSampler:
         self,
         golden_dataset,
         num_icl_examples: int = 3,
-        sampling_strategy: str = "random",  # "random", "diverse", "balanced"
+        sampling_strategy: str = "balanced",  # "random", "diverse", "balanced"
         random_state: int = 42
     ):
         """

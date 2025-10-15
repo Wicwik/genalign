@@ -183,6 +183,8 @@ class LlamaGenerator:
         )
         
         generated_samples = []
+
+        print(prompts)
         
         # Generate samples in batches to manage memory
         batch_size = 4  # Adjust based on GPU memory
