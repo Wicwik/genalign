@@ -128,6 +128,7 @@ class ICLSampler:
     def _balanced_sampling(self, target_class: int = None) -> List[Tuple[str, int, str]]:
         """Balanced sampling strategy ensuring representation from all classes."""
         if target_class is not None:
+            print(f"target_class: {target_class}")
             # For specific class, use diverse sampling
             return self._diverse_sampling(target_class)
         
