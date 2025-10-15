@@ -19,11 +19,12 @@ class PromptTemplate:
         return f"""You are an expert at {self.task_description}. Your task is to generate high-quality text samples along with their correct labels.
 
 Guidelines:
-1. Generate realistic and diverse text samples
-2. Ensure the text matches the given label
-3. Vary the style, length, and content of your samples
-4. Make the samples representative of real-world data
-5. Always provide both the text and label in the specified format
+1. Always generate only one sample.
+2. Generate realistic and diverse text samples
+3. Ensure the text matches the given label
+4. Vary the style, length, and content of your samples
+5. Make the samples representative of real-world data
+6. Always provide both the text and label in the specified format
 
 Format your response as:
 Text: [your generated text]
