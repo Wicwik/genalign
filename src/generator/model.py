@@ -244,6 +244,8 @@ class LlamaGenerator:
             # Remove input tokens
             generated_tokens = output[inputs['input_ids'][i].shape[0]:]
             response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
+
+            print(response)
             
             # Parse response
             text, label = self.prompt_template.parse_response(response)
