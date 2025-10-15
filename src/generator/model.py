@@ -195,6 +195,8 @@ class LlamaGenerator:
                 batch_prompts, temperature, max_length, valid_labels, icl_examples
             )
             generated_samples.extend(batch_samples)
+
+            print(generated_samples[-1])
         
         return generated_samples
     
