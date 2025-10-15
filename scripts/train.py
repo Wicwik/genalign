@@ -152,6 +152,8 @@ def train_iteration(
     # Step 1: Generate synthetic data
     logger.info("Generating synthetic data...")
     icl_examples = icl_sampler.sample_examples()
+
+    print(icl_examples)
     
     generated_samples = generator.generate_samples(
         icl_examples=icl_examples,
