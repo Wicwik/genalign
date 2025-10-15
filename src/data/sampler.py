@@ -12,7 +12,7 @@ class ICLSampler:
     def __init__(
         self,
         golden_dataset,
-        num_icl_examples: int = 3,
+        num_icl_examples: int = 4,
         sampling_strategy: str = "balanced",  # "random", "diverse", "balanced"
         random_state: int = 42
     ):
@@ -36,6 +36,9 @@ class ICLSampler:
         
         # Prepare data for sampling
         self._prepare_sampling_data()
+
+
+    
     
     def _prepare_sampling_data(self):
         """Prepare data structures for efficient sampling."""
@@ -43,12 +46,6 @@ class ICLSampler:
         for class_id in range(self.golden_dataset.num_labels):
             examples = self.golden_dataset.get_class_examples(class_id)
             self.class_examples[class_id] = examples
-        
-        # For diverse sampling, compute TF-IDF features
-        if self.sampling_strategy == "diverse":
-            all_texts = [example[0] for examples in self.class_examples.values() for example in examples]
-            self.tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
-            self.tfidf_features = self.tfidf_vectorizer.fit_transform(all_texts)
     
     def sample_examples(self, target_class: int = None) -> List[Tuple[str, int, str]]:
         """
@@ -87,6 +84,12 @@ class ICLSampler:
     
     def _diverse_sampling(self, target_class: int = None) -> List[Tuple[str, int, str]]:
         """Diverse sampling strategy using TF-IDF similarity."""
+
+        # For diverse sampling, compute TF-IDF features
+        all_texts = [example[0] for examples in self.class_examples.values() for example in examples]
+        self.tfidf_vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
+        self.tfidf_features = self.tfidf_vectorizer.fit_transform(all_texts)
+
         if target_class is not None:
             # Sample diverse examples from specific class
             examples = self.class_examples[target_class]
@@ -130,11 +133,15 @@ class ICLSampler:
         
         # Sample from all classes with balanced representation
         examples_per_class = max(1, self.num_icl_examples // self.golden_dataset.num_labels)
+        print(f"examples_per_class: {examples_per_class}")
         selected = []
+
+        print("balanced sampling")
         
         for class_id in range(self.golden_dataset.num_labels):
             examples = self.class_examples[class_id]
             if examples:
+                print(f"class {class_id} has {len(examples)} examples")
                 # Sample examples from this class
                 num_to_sample = min(examples_per_class, len(examples))
                 class_selected = random.sample(examples, num_to_sample)
