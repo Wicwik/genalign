@@ -220,9 +220,9 @@ class LlamaGenerator:
         
         # Update generation config
         generation_config = GenerationConfig(
-            do_sample=True,
-            temperature=temperature,
-            top_p=0.9,
+            do_sample=False,
+            temperature=0,
+            top_p=0,
             max_new_tokens=256,  # Limit new tokens for efficiency
             pad_token_id=self.tokenizer.pad_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
