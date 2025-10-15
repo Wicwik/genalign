@@ -54,7 +54,7 @@ def setup_components(config: dict):
     icl_sampler = ICLSampler(
         golden_dataset=golden_dataset,
         num_icl_examples=config["generation"]["num_icl_examples"],
-        sampling_strategy="diverse"
+        sampling_strategy="balanced"
     )
     
     # Setup generator

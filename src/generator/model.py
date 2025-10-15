@@ -9,6 +9,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, TaskType
 from typing import List, Tuple, Dict, Any, Optional
 import logging
+from tqdm import tqdm
 from .prompts import PromptTemplate, ClassificationPromptTemplate
 
 
@@ -184,11 +185,11 @@ class LlamaGenerator:
         
         generated_samples = []
 
-        print(prompts)
+        # print(prompts)
         
         # Generate samples in batches to manage memory
         batch_size = 4  # Adjust based on GPU memory
-        for i in range(0, len(prompts), batch_size):
+        for i in tqdm(range(0, len(prompts), batch_size), desc="Generating samples"):
             batch_prompts = prompts[i:i + batch_size]
             batch_samples = self._generate_batch(
                 batch_prompts, temperature, max_length, valid_labels, icl_examples
