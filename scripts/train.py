@@ -102,7 +102,7 @@ def setup_components(config: dict):
     
     # Setup PPO trainer
     ppo_config = {
-        "learning_rate": config["training"]["learning_rate"],
+        "learning_rate": float(config["training"]["learning_rate"]),
         "batch_size": config["training"]["batch_size"],
         "gradient_accumulation_steps": config["training"]["gradient_accumulation_steps"],
         "max_grad_norm": config["training"]["max_grad_norm"],
