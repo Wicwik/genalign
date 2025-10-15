@@ -237,6 +237,8 @@ class LlamaGenerator:
                 temperature=temperature,
                 pad_token_id=self.tokenizer.pad_token_id
             )
+
+            print(outputs)
         
         # Decode and parse responses
         samples = []
