@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    LlamaForCausalLM, 
-    LlamaTokenizer, 
     BitsAndBytesConfig,
-    GenerationConfig
+    GenerationConfig,
+    AutoTokenizer,
+    AutoModelForCausalLM
 )
 from peft import LoraConfig, get_peft_model, TaskType
 from typing import List, Tuple, Dict, Any, Optional
@@ -25,7 +25,7 @@ class LlamaGenerator:
         lora_alpha: int = 32,
         lora_dropout: float = 0.1,
         device: str = "auto",
-        torch_dtype: torch.dtype = torch.float16
+        dtype: torch.dtype = torch.float16
     ):
         """
         Initialize the Llama generator.
@@ -39,14 +39,14 @@ class LlamaGenerator:
             lora_alpha: LoRA alpha parameter
             lora_dropout: LoRA dropout rate
             device: Device to use ("auto", "cuda", "cpu")
-            torch_dtype: Torch data type
+            dtype: Torch data type
         """
         self.model_name = model_name
         self.cache_dir = cache_dir
         self.quantization = quantization
         self.use_lora = use_lora
         self.device = self._get_device(device)
-        self.torch_dtype = torch_dtype
+        self.dtype = dtype
         
         # Initialize components
         self.tokenizer = None
@@ -59,7 +59,7 @@ class LlamaGenerator:
             r=lora_rank,
             lora_alpha=lora_alpha,
             lora_dropout=lora_dropout,
-            target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+            target_modules=["q_proj", "v_proj", "k_proj", "down_proj"]
         ) if use_lora else None
         
         # Generation configuration
@@ -88,21 +88,12 @@ class LlamaGenerator:
         """Load the model and tokenizer."""
         logging.info(f"Loading model: {self.model_name}")
         
-        # Load tokenizer
-        try:
-            self.tokenizer = LlamaTokenizer.from_pretrained(
-                self.model_name,
-                cache_dir=self.cache_dir,
-                trust_remote_code=True
-            )
-        except Exception as e:
-            # Fallback to AutoTokenizer if LlamaTokenizer fails
-            from transformers import AutoTokenizer
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name,
-                cache_dir=self.cache_dir,
-                trust_remote_code=True
-            )
+        from transformers import AutoTokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+            cache_dir=self.cache_dir,
+            trust_remote_code=True
+        )
         
         # Set pad token
         if self.tokenizer.pad_token is None:
@@ -118,7 +109,7 @@ class LlamaGenerator:
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=self.torch_dtype,
+                bnb_4bit_compute_dtype=self.dtype,
                 bnb_4bit_use_double_quant=True
             )
         elif self.quantization == "8bit":
@@ -129,7 +120,7 @@ class LlamaGenerator:
         # Load model
         model_kwargs = {
             "cache_dir": self.cache_dir,
-            "torch_dtype": self.torch_dtype,
+            "dtype": self.dtype,
             "device_map": "auto" if self.device.type == "cuda" else None,
             "trust_remote_code": True
         }
@@ -137,7 +128,7 @@ class LlamaGenerator:
         if quantization_config:
             model_kwargs["quantization_config"] = quantization_config
         
-        self.model = LlamaForCausalLM.from_pretrained(
+        self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             **model_kwargs
         )
@@ -274,10 +265,10 @@ class LlamaGenerator:
     
     def load_model(self, load_path: str):
         """Load a saved model and tokenizer."""
-        self.tokenizer = LlamaTokenizer.from_pretrained(load_path)
-        self.model = LlamaForCausalLM.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(load_path)
+        self.model = AutoModelForCausalLM.from_pretrained(
             load_path,
-            torch_dtype=self.torch_dtype,
+            dtype=self.dtype,
             device_map="auto" if self.device.type == "cuda" else None
         )
         logging.info(f"Model loaded from {load_path}")
@@ -290,7 +281,7 @@ class LlamaGenerator:
             "use_lora": self.use_lora,
             "lora_config": self.lora_config,
             "device": str(self.device),
-            "torch_dtype": str(self.torch_dtype)
+            "dtype": str(self.dtype)
         }
     
     def enable_training_mode(self):

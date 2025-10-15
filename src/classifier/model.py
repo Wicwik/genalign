@@ -12,7 +12,7 @@ import os
 
 
 class RoBERTaClassifier:
-    """RoBERTa-based classifier for text classification."""
+    """RoBERTa classifier for text classification."""
     
     def __init__(
         self,
@@ -281,7 +281,7 @@ class RoBERTaClassifier:
             "model_name": self.model_name,
             "num_labels": self.num_labels,
             "device": str(self.device),
-            "torch_dtype": str(self.torch_dtype),
+            "dtype": str(self.torch_dtype),
             "label_to_id": self.label_to_id,
             "id_to_label": self.id_to_label
         }
