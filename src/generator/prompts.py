@@ -93,6 +93,7 @@ Label: [the corresponding label]"""
                 target_class = None
             
             prompt = self.create_prompt(icl_examples, target_class)
+            print(prompt)
             prompts.append(prompt)
         
         return prompts
