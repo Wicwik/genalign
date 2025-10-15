@@ -56,7 +56,7 @@ convergence:
 
 # Data Configuration
 data:
-  golden_data_path: "./data/sample_data.csv"
+  golden_data_path: "./data/yelp_polarity.csv"
   text_column: "text"
   label_column: "label"
   train_split: 0.8
