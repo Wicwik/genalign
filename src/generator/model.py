@@ -238,7 +238,7 @@ class LlamaGenerator:
                 pad_token_id=self.tokenizer.pad_token_id
             )
 
-            print(outputs)
+            print(self.tokenizer.decode(outputs[-1], skip_special_tokens=False))
         
         # Decode and parse responses
         samples = []
