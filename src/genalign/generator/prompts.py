@@ -101,7 +101,7 @@ Label: [the corresponding label]"""
             
             prompts.append(formatted_prompt)
 
-        print(prompts[0])
+        # print(prompts[0])
         
         return prompts
     

@@ -224,13 +224,13 @@ class LlamaGenerator:
         """Generate a batch of samples."""
         # Generate using pipeline
         generation_kwargs = {
-            "max_new_tokens": 256,  # Limit new tokens for efficiency
+            "max_new_tokens": max_length,
             "do_sample": True,
             "temperature": temperature,
             "top_p": 0.9,
             "pad_token_id": self.tokenizer.pad_token_id,
             "eos_token_id": self.tokenizer.eos_token_id,
-            "return_full_text": False,  # Only return generated text, not input
+            "return_full_text": False, 
         }
 
         self.pipeline = pipeline(

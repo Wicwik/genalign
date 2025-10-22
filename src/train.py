@@ -11,13 +11,14 @@ import os
 import sys
 from pathlib import Path
 
-from src.data import GoldenDataset, ICLSampler, SyntheticDataset, create_dataloader
-from src.generator import LlamaGenerator, ClassificationPromptTemplate
-from src.classifier import RoBERTaClassifier, ClassifierTrainer
-from src.metrics import DistanceCalculator
-from src.reward import RewardModel
-from src.rl import PPOTrainerWrapper, SimplifiedPPOTrainer
-from src.utils import setup_logging, ExperimentTracker
+from genalign.data import GoldenDataset, ICLSampler, SyntheticDataset, create_dataloader
+from genalign.generator import LlamaGenerator, ClassificationPromptTemplate
+from genalign.classifier import Classifier, ClassifierTrainer
+from genalign.metrics import DistanceCalculator
+from genalign.reward import RewardModel
+from genalign.rl import PPOTrainerWrapper, SimplifiedPPOTrainer
+from genalign.utils import setup_logging, ExperimentTracker
+from genalign.utils.logging import create_experiment_directory
 
 
 def load_config(config_path: str) -> dict:
@@ -74,7 +75,7 @@ def setup_components(config: dict):
     
     # Setup classifier
     logger.info("Initializing classifier...")
-    classifier = RoBERTaClassifier(
+    classifier = Classifier(
         model_name=config["models"]["classifier"]["name"],
         num_labels=golden_dataset.num_labels,
         cache_dir=config["models"]["classifier"]["cache_dir"]
@@ -306,7 +307,6 @@ def main():
     logger = components["logger"]
     
     # Create experiment directory
-    from utils.logging import create_experiment_directory
     experiment_dir = create_experiment_directory(
         base_dir=args.output_dir,
         experiment_name=args.experiment_name
