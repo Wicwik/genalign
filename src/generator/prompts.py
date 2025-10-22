@@ -1,4 +1,5 @@
 from typing import List, Tuple, Dict, Any
+from transformers import PreTrainedTokenizer
 
 
 class PromptTemplate:
@@ -45,8 +46,7 @@ Label: [the corresponding label]"""
         Returns:
             Formatted prompt string
         """
-        prompt_parts = [self.system_prompt]
-        prompt_parts.append("\nHere are some examples:")
+        prompt_parts = ["\nHere are some examples:"]
         
         # Add ICL examples
         for text, label_id, label_name in icl_examples:
@@ -66,12 +66,13 @@ Label: [the corresponding label]"""
         else:
             prompt_parts.append(f"\nNow generate a new text sample with any appropriate label:")
         
-        return "\n".join(prompt_parts)
+        return [{"role": "system", "content": self.system_prompt}, {"role": "user", "content": "\n".join(prompt_parts)}]
     
     def create_batch_prompts(
         self, 
         icl_examples: List[Tuple[str, int, str]], 
         num_samples: int,
+        tokenizer: PreTrainedTokenizer,
         target_classes: List[int] = None
     ) -> List[str]:
         """
@@ -80,6 +81,7 @@ Label: [the corresponding label]"""
         Args:
             icl_examples: List of (text, label_id, label_name) examples
             num_samples: Number of samples to generate
+            tokenizer: PreTrainedTokenizer for applying chat template
             target_classes: List of target classes (None for random)
         
         Returns:
@@ -93,9 +95,13 @@ Label: [the corresponding label]"""
             else:
                 target_class = None
             
-            prompt = self.create_prompt(icl_examples, target_class)
-            print(prompt)
-            prompts.append(prompt)
+            # Convert to chat format and apply template
+            messages = self.create_prompt(icl_examples, target_class)
+            formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            
+            prompts.append(formatted_prompt)
+
+        print(prompts[0])
         
         return prompts
     

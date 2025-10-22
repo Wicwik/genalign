@@ -4,7 +4,8 @@ from transformers import (
     BitsAndBytesConfig,
     GenerationConfig,
     AutoTokenizer,
-    AutoModelForCausalLM
+    AutoModelForCausalLM,
+    pipeline
 )
 from peft import LoraConfig, get_peft_model, TaskType
 from typing import List, Tuple, Dict, Any, Optional
@@ -52,6 +53,7 @@ class LlamaGenerator:
         # Initialize components
         self.tokenizer = None
         self.model = None
+        self.pipeline = None
         self.prompt_template = None
         
         # LoRA configuration
@@ -180,7 +182,7 @@ class LlamaGenerator:
         
         # Create prompts
         prompts = self.prompt_template.create_batch_prompts(
-            icl_examples, num_samples, target_classes
+            icl_examples, num_samples, self.tokenizer, target_classes
         )
         
         generated_samples = []
@@ -196,7 +198,7 @@ class LlamaGenerator:
             )
             generated_samples.extend(batch_samples)
 
-            print(generated_samples[-1])
+            # print(generated_samples[-1])
         
         return generated_samples
     
@@ -209,45 +211,41 @@ class LlamaGenerator:
         icl_examples: List[Tuple[str, int, str]]
     ) -> List[Tuple[str, int, str]]:
         """Generate a batch of samples."""
-        # Tokenize prompts
-        inputs = self.tokenizer(
-            prompts,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=max_length
-        ).to(self.device)
-        
-        # Update generation config
-        generation_config = GenerationConfig(
-            do_sample=False,
-            temperature=None,
-            top_p=None,
-            max_new_tokens=256,  # Limit new tokens for efficiency
-            pad_token_id=self.tokenizer.pad_token_id,
-            eos_token_id=self.tokenizer.eos_token_id,
+        # Generate using pipeline
+        generation_kwargs = {
+            "max_new_tokens": 256,  # Limit new tokens for efficiency
+            "do_sample": True,
+            "temperature": temperature,
+            "top_p": 0.9,
+            "pad_token_id": self.tokenizer.pad_token_id,
+            "eos_token_id": self.tokenizer.eos_token_id,
+            "return_full_text": False,  # Only return generated text, not input
+        }
+
+        self.pipeline = pipeline(
+            "text-generation",
+            model=self.model,
+            tokenizer=self.tokenizer,
+            dtype=self.dtype
         )
         
-        # Generate
+        # Generate using pipeline
         with torch.no_grad():
-            outputs = self.model.generate(
-                **inputs,
-                generation_config=generation_config,
-                do_sample=True,
-                temperature=temperature,
-                pad_token_id=self.tokenizer.pad_token_id
+            outputs = self.pipeline(
+                prompts,
+                **generation_kwargs
             )
-
-            print(self.tokenizer.decode(outputs[-1], skip_special_tokens=False))
+            
+            # Debug print
+            if outputs:
+                for output in outputs:
+                    print(f"Generated response: {output[0]['generated_text']}")
         
-        # Decode and parse responses
+        # Parse responses
         samples = []
-        for i, output in enumerate(outputs):
-            # Remove input tokens
-            generated_tokens = output[inputs['input_ids'][i].shape[0]:]
-            response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-
-            # print(response)
+        for output in outputs:
+            # Extract generated text
+            response = output[0]['generated_text']
             
             # Parse response
             text, label = self.prompt_template.parse_response(response)
@@ -264,6 +262,8 @@ class LlamaGenerator:
                 if label_id is not None:
                     samples.append((text, label_id, label))
         
+        print("Number of samples: ", len(samples))
+        print(samples)
         return samples
     
     def save_model(self, save_path: str):
@@ -280,6 +280,7 @@ class LlamaGenerator:
             dtype=self.dtype,
             device_map="auto" if self.device.type == "cuda" else None
         )
+        
         logging.info(f"Model loaded from {load_path}")
     
     def get_model_parameters(self) -> Dict[str, Any]:

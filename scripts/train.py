@@ -141,7 +141,7 @@ def train_iteration(
     logger = components["logger"]
     golden_dataset = components["golden_dataset"]
     icl_sampler = components["icl_sampler"]
-    generator = components["generator"]
+    generator : LlamaGenerator = components["generator"]
     classifier = components["classifier"]
     distance_calculator = components["distance_calculator"]
     reward_model = components["reward_model"]
@@ -158,7 +158,8 @@ def train_iteration(
     generated_samples = generator.generate_samples(
         icl_examples=icl_examples,
         num_samples=config["generation"]["num_samples_per_iteration"],
-        temperature=config["generation"]["temperature"]
+        temperature=config["generation"]["temperature"],
+        target_classes=golden_dataset.unique_labels,
     )
     
     if not generated_samples:
