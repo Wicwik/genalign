@@ -56,7 +56,7 @@ class Classifier:
     
     def _load_model(self):
         """Load the model and tokenizer."""
-        logging.info(f"Loading classifier: {self.model_name}")
+        self.logger.info(f"Loading classifier: {self.model_name}")
         
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -75,7 +75,7 @@ class Classifier:
         # Move to device
         self.model = self.model.to(self.device)
         
-        logging.info(f"Classifier loaded successfully on {self.device}")
+        self.logger.info(f"Classifier loaded successfully on {self.device}")
     
     def set_label_mapping(self, label_to_id: Dict[str, int], id_to_label: Dict[int, str]):
         """Set the label mapping for the classifier."""
@@ -250,7 +250,7 @@ class Classifier:
                 "num_labels": self.num_labels
             }, f, indent=2)
         
-        logging.info(f"Classifier saved to {save_path}")
+        self.logger.info(f"Classifier saved to {save_path}")
     
     def load_model(self, load_path: str):
         """Load a saved model and tokenizer."""
@@ -271,7 +271,7 @@ class Classifier:
                 self.id_to_label = {int(k): v for k, v in mappings["id_to_label"].items()}
                 self.num_labels = mappings["num_labels"]
         
-        logging.info(f"Classifier loaded from {load_path}")
+        self.logger.info(f"Classifier loaded from {load_path}")
     
     def get_model_parameters(self) -> Dict[str, Any]:
         """Get model configuration parameters."""

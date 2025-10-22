@@ -239,8 +239,8 @@ class ClassifierTrainer:
         best_val_loss = float('inf')
         best_model_state = None
         
-        logging.info(f"Starting training for {num_epochs} epochs")
-        logging.info(f"Total training steps: {num_training_steps}")
+        self.logger.info(f"Starting training for {num_epochs} epochs")
+        self.logger.info(f"Total training steps: {num_training_steps}")
         
         for epoch in range(num_epochs):
             start_time = time.time()
@@ -261,7 +261,7 @@ class ClassifierTrainer:
             
             # Log metrics
             epoch_time = time.time() - start_time
-            logging.info(
+            self.logger.info(
                 f"Epoch {epoch + 1}/{num_epochs} - "
                 f"Train Loss: {train_metrics['loss']:.4f}, "
                 f"Train Acc: {train_metrics['accuracy']:.4f}, "
@@ -277,12 +277,12 @@ class ClassifierTrainer:
                 
                 if save_path:
                     self.classifier.save_model(save_path)
-                    logging.info(f"Best model saved to {save_path}")
+                    self.logger.info(f"Best model saved to {save_path}")
         
         # Restore best model
         if save_best_model and best_model_state is not None:
             self.classifier.model.load_state_dict(best_model_state)
-            logging.info("Best model restored")
+            self.logger.info("Best model restored")
         
         return self.training_history
     

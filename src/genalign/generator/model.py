@@ -14,7 +14,7 @@ from tqdm import tqdm
 from .prompts import PromptTemplate, ClassificationPromptTemplate
 
 
-class LlamaGenerator:
+class Generator:
     """Llama-3.1-8B generator with LoRA support for synthetic data generation."""
     
     def __init__(
@@ -27,7 +27,8 @@ class LlamaGenerator:
         lora_alpha: int = 32,
         lora_dropout: float = 0.1,
         device: str = "auto",
-        dtype: torch.dtype = torch.float16
+        dtype: torch.dtype = torch.float16,
+        logger: logging.Logger = None
     ):
         """
         Initialize the Llama generator.
@@ -49,6 +50,7 @@ class LlamaGenerator:
         self.use_lora = use_lora
         self.device = self._get_device(device)
         self.dtype = dtype
+        self.logger = logger
         
         # Initialize components
         self.tokenizer = None
@@ -89,7 +91,8 @@ class LlamaGenerator:
     
     def _load_model(self):
         """Load the model and tokenizer."""
-        logging.info(f"Loading model: {self.model_name}")
+        if self.logger:
+            self.logger.info(f"Loading model: {self.model_name}")
         
         from transformers import AutoTokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -139,13 +142,13 @@ class LlamaGenerator:
         # Apply LoRA if enabled
         if self.use_lora and self.lora_config:
             self.model = get_peft_model(self.model, self.lora_config)
-            logging.info("Applied LoRA adapters to the model")
+            self.logger.info("Applied LoRA adapters to the model")
         
         # Move to device if not using device_map
         if self.device.type == "cpu" or not torch.cuda.is_available():
             self.model = self.model.to(self.device)
         
-        logging.info(f"Model loaded successfully on {self.device}")
+        self.logger.info(f"Model loaded successfully on {self.device}")
     
     def set_prompt_template(self, prompt_template: PromptTemplate):
         """Set the prompt template for generation."""
@@ -281,7 +284,7 @@ class LlamaGenerator:
         """Save the model and tokenizer."""
         self.model.save_pretrained(save_path)
         self.tokenizer.save_pretrained(save_path)
-        logging.info(f"Model saved to {save_path}")
+        self.logger.info(f"Model saved to {save_path}")
     
     def load_model(self, load_path: str):
         """Load a saved model and tokenizer."""
@@ -292,7 +295,7 @@ class LlamaGenerator:
             device_map="auto" if self.device.type == "cuda" else None
         )
         
-        logging.info(f"Model loaded from {load_path}")
+        self.logger.info(f"Model loaded from {load_path}")
     
     def get_model_parameters(self) -> Dict[str, Any]:
         """Get model configuration parameters."""

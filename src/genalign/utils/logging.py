@@ -109,7 +109,8 @@ def log_metrics(
 
 def save_experiment_config(
     config: Dict[str, Any],
-    save_path: str
+    save_path: str,
+    logger: logging.Logger = None
 ):
     """
     Save experiment configuration to file.
@@ -121,12 +122,13 @@ def save_experiment_config(
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     
     with open(save_path, 'w') as f:
-        json.dump(config, f, indent=2)
+        json.dump(config, f, indent=2)\
     
-    logging.info(f"Experiment config saved to {save_path}")
+    if logger:
+        logger.info(f"Experiment config saved to {save_path}")
 
 
-def load_experiment_config(config_path: str) -> Dict[str, Any]:
+def load_experiment_config(config_path: str, logger: logging.Logger = None) -> Dict[str, Any]:
     """
     Load experiment configuration from file.
     
@@ -139,13 +141,16 @@ def load_experiment_config(config_path: str) -> Dict[str, Any]:
     with open(config_path, 'r') as f:
         config = json.load(f)
     
-    logging.info(f"Experiment config loaded from {config_path}")
+    if logger:
+        logger.info(f"Experiment config loaded from {config_path}")
+
     return config
 
 
 def create_experiment_directory(
     base_dir: str,
-    experiment_name: str = None
+    experiment_name: str = None,
+    logger: logging.Logger = None
 ) -> str:
     """
     Create a directory for the experiment.
@@ -168,7 +173,9 @@ def create_experiment_directory(
     for subdir in subdirs:
         os.makedirs(os.path.join(experiment_dir, subdir), exist_ok=True)
     
-    logging.info(f"Created experiment directory: {experiment_dir}")
+    if logger:
+        logger.info(f"Created experiment directory: {experiment_dir}")
+
     return experiment_dir
 
 
@@ -179,7 +186,8 @@ class ExperimentTracker:
         self,
         experiment_dir: str,
         use_wandb: bool = False,
-        project_name: str = "genalign-rl"
+        project_name: str = "genalign-rl",
+        logger: logging.Logger = None
     ):
         """
         Initialize the experiment tracker.
@@ -192,6 +200,7 @@ class ExperimentTracker:
         self.experiment_dir = experiment_dir
         self.use_wandb = use_wandb
         self.project_name = project_name
+        self.logger = logger
         
         # Create metrics file
         self.metrics_file = os.path.join(experiment_dir, "metrics.json")
@@ -256,7 +265,9 @@ class ExperimentTracker:
         }
         
         torch.save(checkpoint_data, checkpoint_path)
-        logging.info(f"Checkpoint saved to {checkpoint_path}")
+
+        if self.logger:
+            self.logger.info(f"Checkpoint saved to {checkpoint_path}")
     
     def load_checkpoint(self, step: int) -> Dict[str, Any]:
         """
@@ -275,7 +286,8 @@ class ExperimentTracker:
             raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
         
         checkpoint_data = torch.load(checkpoint_path)
-        logging.info(f"Checkpoint loaded from {checkpoint_path}")
+        if self.logger:
+            self.logger.info(f"Checkpoint loaded from {checkpoint_path}")
         return checkpoint_data
     
     def get_metrics_history(self) -> List[Dict[str, Any]]:

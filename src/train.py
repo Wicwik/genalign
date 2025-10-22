@@ -5,14 +5,10 @@ Main training script for GenAlign RL system.
 
 import argparse
 import yaml
-import torch
-import logging
 import os
-import sys
-from pathlib import Path
 
 from genalign.data import GoldenDataset, ICLSampler, SyntheticDataset, create_dataloader
-from genalign.generator import LlamaGenerator, ClassificationPromptTemplate
+from genalign.generator import Generator, ClassificationPromptTemplate
 from genalign.classifier import Classifier, ClassifierTrainer
 from genalign.metrics import DistanceCalculator
 from genalign.reward import RewardModel
@@ -57,7 +53,7 @@ def setup_components(config: dict):
     
     # Setup generator
     logger.info("Initializing generator...")
-    generator = LlamaGenerator(
+    generator = Generator(
         model_name=config["models"]["generator"]["name"],
         cache_dir=config["models"]["generator"]["cache_dir"],
         quantization=config["models"]["generator"]["quantization"],
@@ -278,7 +274,8 @@ def train_iteration(
         experiment_tracker.save_checkpoint(
             model_state=generator.model.state_dict(),
             step=iteration,
-            additional_info=checkpoint_info
+            additional_info=checkpoint_info,
+            logger=logger,
         )
     
     return {

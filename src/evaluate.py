@@ -19,12 +19,12 @@ import seaborn as sns
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from data import GoldenDataset, ICLSampler
-from generator import LlamaGenerator, ClassificationPromptTemplate
-from classifier import RoBERTaClassifier, ClassifierTrainer
-from metrics import DistanceCalculator
-from reward import RewardModel
-from utils import setup_logging
+from genalign.data import GoldenDataset, ICLSampler
+from genalign.generator import Generator, ClassificationPromptTemplate
+from genalign.classifier import Classifier, ClassifierTrainer
+from genalign.metrics import DistanceCalculator
+from genalign.reward import RewardModel
+from genalign.utils import setup_logging
 
 
 def load_config(config_path: str) -> dict:
@@ -75,7 +75,7 @@ def setup_components(config: dict):
     
     # Setup classifier
     logger.info("Initializing classifier...")
-    classifier = RoBERTaClassifier(
+    classifier = Classifier(
         model_name=config["models"]["classifier"]["name"],
         num_labels=golden_dataset.num_labels,
         cache_dir=config["models"]["classifier"]["cache_dir"]

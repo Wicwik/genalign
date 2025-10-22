@@ -17,7 +17,8 @@ class PPOTrainerWrapper:
         generator,
         reward_model,
         config: Dict[str, Any],
-        device: str = "auto"
+        device: str = "auto",
+        logger: logging.Logger = None
     ):
         """
         Initialize the PPO trainer.
@@ -32,6 +33,7 @@ class PPOTrainerWrapper:
         self.reward_model = reward_model
         self.config = config
         self.device = generator.device
+        self.logger = logger
         
         # PPO configuration
         ppo_config = PPOConfig(
@@ -77,7 +79,7 @@ class PPOTrainerWrapper:
             "entropies": []
         }
         
-        logging.info("PPO trainer initialized")
+        self.logger.info("PPO trainer initialized")
     
     def compute_reward_for_batch(
         self,
@@ -277,7 +279,7 @@ class PPOTrainerWrapper:
         )
         
         if not generated_samples:
-            logging.warning("No samples generated successfully")
+            self.logger.warning("No samples generated successfully")
             return {"success": False, "error": "No samples generated"}
         
         # Extract texts and labels
@@ -307,12 +309,12 @@ class PPOTrainerWrapper:
     def save_model(self, save_path: str):
         """Save the trained model."""
         self.ppo_trainer.save_model(save_path)
-        logging.info(f"PPO model saved to {save_path}")
+        self.logger.info(f"PPO model saved to {save_path}")
     
     def load_model(self, load_path: str):
         """Load a trained model."""
         # This would need to be implemented based on TRL's save/load functionality
-        logging.info(f"Loading PPO model from {load_path}")
+        self.logger.info(f"Loading PPO model from {load_path}")
     
     def get_training_history(self) -> Dict[str, List[float]]:
         """Get the training history."""
@@ -380,7 +382,7 @@ class SimplifiedPPOTrainer:
             "entropies": []
         }
         
-        logging.info("Simplified PPO trainer initialized")
+        self.logger.info("Simplified PPO trainer initialized")
     
     def compute_advantages(self, rewards: List[float], values: List[float]) -> List[float]:
         """Compute advantages using simple baseline."""
