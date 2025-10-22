@@ -180,25 +180,36 @@ class LlamaGenerator:
         if valid_labels is None:
             valid_labels = list(set(label_name for _, _, label_name in icl_examples))
         
-        # Create prompts
-        prompts = self.prompt_template.create_batch_prompts(
-            icl_examples, num_samples, self.tokenizer, target_classes
-        )
-        
         generated_samples = []
-
-        # print(prompts)
-        
-        # Generate samples in batches to manage memory
         batch_size = 4  # Adjust based on GPU memory
-        for i in tqdm(range(0, len(prompts), batch_size), desc="Generating samples"):
-            batch_prompts = prompts[i:i + batch_size]
-            batch_samples = self._generate_batch(
-                batch_prompts, temperature, max_length, valid_labels, icl_examples
-            )
-            generated_samples.extend(batch_samples)
-
-            # print(generated_samples[-1])
+        
+        # Generate samples until we reach the target number
+        with tqdm(total=num_samples, desc="Generating samples") as pbar:
+            while len(generated_samples) < num_samples:
+                # Calculate how many more samples we need
+                remaining_samples = num_samples - len(generated_samples)
+                
+                # Generate a batch of prompts for the remaining samples
+                # We generate a bit more than needed to account for potential failures
+                batch_prompt_count = min(batch_size, remaining_samples + 2)
+                
+                # Create prompts for this batch
+                batch_prompts = self.prompt_template.create_batch_prompts(
+                    icl_examples, batch_prompt_count, self.tokenizer, target_classes
+                )
+                
+                # Generate samples for this batch
+                batch_samples = self._generate_batch(
+                    batch_prompts, temperature, max_length, valid_labels, icl_examples
+                )
+                
+                # Add valid samples to our collection
+                for sample in batch_samples:
+                    if len(generated_samples) < num_samples:
+                        generated_samples.append(sample)
+                        pbar.update(1)
+                    else:
+                        break  # We have enough samples
         
         return generated_samples
     

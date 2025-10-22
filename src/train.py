@@ -11,16 +11,13 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-
-from data import GoldenDataset, ICLSampler
-from generator import LlamaGenerator, ClassificationPromptTemplate
-from classifier import RoBERTaClassifier, ClassifierTrainer
-from metrics import DistanceCalculator
-from reward import RewardModel
-from rl import PPOTrainerWrapper, SimplifiedPPOTrainer
-from utils import setup_logging, ExperimentTracker
+from src.data import GoldenDataset, ICLSampler, SyntheticDataset, create_dataloader
+from src.generator import LlamaGenerator, ClassificationPromptTemplate
+from src.classifier import RoBERTaClassifier, ClassifierTrainer
+from src.metrics import DistanceCalculator
+from src.reward import RewardModel
+from src.rl import PPOTrainerWrapper, SimplifiedPPOTrainer
+from src.utils import setup_logging, ExperimentTracker
 
 
 def load_config(config_path: str) -> dict:
@@ -152,8 +149,6 @@ def train_iteration(
     # Step 1: Generate synthetic data
     logger.info("Generating synthetic data...")
     icl_examples = icl_sampler.sample_examples()
-
-    print(icl_examples)
     
     generated_samples = generator.generate_samples(
         icl_examples=icl_examples,
@@ -178,7 +173,6 @@ def train_iteration(
     
     # Step 3: Train classifier on synthetic data
     logger.info("Training classifier on synthetic data...")
-    from data.dataset import SyntheticDataset, create_dataloader
     
     synthetic_dataset = SyntheticDataset()
     synthetic_dataset.add_samples(

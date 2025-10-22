@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 from transformers import (
-    RobertaForSequenceClassification,
-    RobertaTokenizer,
     AutoTokenizer,
     AutoModelForSequenceClassification
 )
@@ -11,8 +9,8 @@ import logging
 import os
 
 
-class RoBERTaClassifier:
-    """RoBERTa classifier for text classification."""
+class Classifier:
+    """Classifier for text classification."""
     
     def __init__(
         self,
@@ -23,10 +21,10 @@ class RoBERTaClassifier:
         dtype: torch.dtype = torch.float32
     ):
         """
-        Initialize the RoBERTa classifier.
+        Initialize the classifier.
         
         Args:
-            model_name: Name of the RoBERTa model
+            model_name: Name of the model
             num_labels: Number of classification labels
             cache_dir: Directory to cache the model
             device: Device to use ("auto", "cuda", "cpu")
@@ -129,7 +127,7 @@ class RoBERTaClassifier:
         Returns:
             Tuple of (predicted_labels, probabilities)
         """
-        self.model.eval()
+        self.enable_eval_mode()
         all_predictions = []
         all_probabilities = []
         
@@ -208,7 +206,7 @@ class RoBERTaClassifier:
         Returns:
             Tensor containing embeddings
         """
-        self.model.eval()
+        self.enable_eval_mode()
         all_embeddings = []
         
         with torch.no_grad():

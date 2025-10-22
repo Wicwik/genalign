@@ -95,7 +95,7 @@ class ClassifierTrainer:
         num_batches = 0
         
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch}")
-        
+
         for batch_idx, batch in enumerate(progress_bar):
             # Prepare batch data
             texts = [item["text"] for item in batch]
