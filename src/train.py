@@ -135,7 +135,7 @@ def train_iteration(
     logger = components["logger"]
     golden_dataset = components["golden_dataset"]
     icl_sampler = components["icl_sampler"]
-    generator : LlamaGenerator = components["generator"]
+    generator : Generator = components["generator"]
     classifier = components["classifier"]
     distance_calculator = components["distance_calculator"]
     reward_model = components["reward_model"]
